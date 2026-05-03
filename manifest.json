@@ -1,0 +1,17 @@
+{
+  "name": "Simracing Kalender",
+  "short_name": "GridHub",
+  "description": "Dein Team-Kalender für Simracing Events",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00ccff",
+  "icons": [
+    {
+      "src": "https://hbuppukuizrnzrhwvfou.supabase.co/storage/v1/object/public/team-logos/favicon_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

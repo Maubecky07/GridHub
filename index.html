@@ -3,196 +3,430 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wartungsarbeiten | Simracing Kalender</title>
+<title>Simracing Kalender (Beta)</title>
+
+<!-- PWA & Mobile Meta -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ccff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Favicon / Lesezeichen Icon -->
+<link rel="icon" type="image/png" href="https://hbuppukuizrnzrhwvfou.supabase.co/storage/v1/object/public/team-logos/favicon_logo.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #0b0b0b;
-        color: #fff;
-        font-family: 'Exo 2', sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        overflow: hidden;
-    }
+/* HINTERGRUND-EFFEKT */
+body {
+    margin: 0;
+    color: #fff;
+    font-family: 'Exo 2';
+    overflow-x: hidden;
+    background: #050505;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 204, 255, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 100, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 204, 255, 0.2) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(0, 80, 200, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    animation: meshMove 15s ease infinite alternate;
+}
 
-    .maintenance-container {
-        text-align: center;
-        max-width: 600px;
-        padding: 40px;
-        background: #151515;
-        border: 2px solid #ff7b00;
-        border-radius: 15px;
-        box-shadow: 0 0 30px rgba(255, 123, 0, 0.2);
-    }
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(circle, #00ccff 1.5px, transparent 1.5px);
+    background-size: 80px 80px;
+    opacity: 0.15;
+    z-index: -1;
+    animation: particlesMove 40s linear infinite;
+}
 
-    header {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 32px;
-        color: #ff7b00;
-        margin-bottom: 20px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
+@keyframes meshMove {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 15% 15%; }
+}
 
-    .icon {
-        font-size: 60px;
-        margin-bottom: 20px;
-        display: block;
-    }
+@keyframes particlesMove {
+    from { background-position: 0 0; }
+    to { background-position: 800px 800px; }
+}
 
-    h1 {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 24px;
-        margin-bottom: 15px;
-    }
+/* STYLING */
+header{padding:20px;text-align:center;font-family:'Orbitron';word-wrap:break-word;}
+.header-logo { max-width: 300px; height: auto; display: block; margin: 0 auto; mix-blend-mode: screen; }
+.beta-badge{font-size:10px;background:#00ccff;color:#000;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:5px;font-weight:900;display:inline-block;}
 
-    p {
-        font-size: 16px;
-        line-height: 1.6;
-        color: #ccc;
-        margin-bottom: 25px;
-    }
+.maintenance-box { display: none; }
 
-    .info-box {
-        background: rgba(255, 123, 0, 0.1);
-        border: 1px dashed #ff7b00;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-    }
+#start-container{display:flex; flex-direction:column; max-width:1200px; margin:auto; padding:15px; box-sizing:border-box;}
+#teamSelection{display:grid;grid-template-columns:repeat(3, 1fr);gap:15px; flex-grow:1;}
 
-    /* Countdown Styling */
-    #countdown {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 10px;
-        font-family: 'Orbitron', sans-serif;
-    }
+.team-card{background:#151515;border:2px solid #00ccff;border-radius:10px;padding:15px;text-align:center;cursor:pointer;transition:.3s;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;}
+.team-card:hover{transform:translateY(-5px); background:#1a1a1a;}
+.team-card img{width:80px;height:80px;object-fit:contain;margin-bottom:10px;background:#111;border-radius:8px;border:2px solid #00ccff;}
+.team-name{font-family:'Orbitron';margin-top:10px;font-size:14px;}
 
-    .countdown-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 60px;
-    }
+.main-wrapper{display:none;max-width:1000px;margin:auto;padding:15px;box-sizing:border-box;}
+.event{background:#151515;border-left:5px solid #00ccff;margin:10px 0;padding:15px;border-radius:6px;cursor:pointer;transition:0.2s;word-wrap:break-word;}
+.event:hover{background:#1a1a1a;}
+.event.live{border-left:5px solid #00ccff;box-shadow:0 0 20px #00ccff;}
+.event.cancelled{opacity:0.5;border-left:5px solid #ff0000;}
+.event.past{opacity:0.6;border-left:5px solid #555;}
+.event-title{font-size:16px;font-family:'Orbitron';color:#00ccff;margin-bottom:8px;}
+.event-row{display:block;margin:6px 0;font-size:14px;}
+.status-badge{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:bold;display:inline-block;}
+.status-ok{background:#1f7a1f;color:#fff;}
+.status-unclear{background:#b38b00;color:#000;}
+.status-cancelled{background:#b30000;color:#fff;}
+.status-live{background:#00aaff;color:#fff;}
+.status-past{background:#555555;color:#ccc;}
+.countdown-text{font-family:'Orbitron';font-size:12px;color:#00aaff;margin-bottom:5px;}
+.stream-link{display:inline-block;margin-top:10px;color:#00aaff;text-decoration:none;border:1px solid #00aaff;padding:5px 10px;border-radius:4px;transition:0.3s;font-size:13px;}
+.stream-link:hover{background:#00aaff;color:#fff;}
 
-    .countdown-value {
-        font-size: 28px;
-        color: #00aaff;
-        font-weight: bold;
-        text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
-    }
+button{background:#00ccff;border:none;padding:12px;cursor:pointer;font-family:'Orbitron';margin-top:5px;color:#000;font-weight:bold;width:100%;box-sizing:border-box;font-size:14px;}
+#hamburger{position:fixed;top:15px;right:15px;font-size:28px;cursor:pointer;color:#00ccff;display:none;z-index:999;background:rgba(11,11,11,0.8);padding:5px;border-radius:5px;}
+#sideMenu{position:fixed;top:0;right:-300px;width:260px;height:100%;background:#111;border-left:2px solid #00ccff;padding:20px;transition:0.3s;z-index:998;overflow-y:auto;box-sizing:border-box;}
+#sideMenu.open{right:0;}
+.menu-logo{width:100%;max-width:150px;margin:0 auto 20px auto;display:block;mix-blend-mode:screen;}
+.driver-container{display:flex; align-items:center; margin:5px 0;}
+.driver{flex-grow:1; padding:8px;background:#1a1a1a;cursor:pointer;border-radius:5px 0 0 5px;transition:0.2s;font-size:14px;}
+.driver.active{background:#00ccff;color:#000;font-weight:bold;}
+.delete-driver-btn{background:#b30000; color:#fff; padding:8px 12px; border-radius:0 5px 5px 0; font-family:'Arial'; cursor:pointer;}
 
-    .countdown-label {
-        font-size: 10px;
-        color: #888;
-        text-transform: uppercase;
-        margin-top: 5px;
-    }
+.badge-owner { color: #ffd700; margin-left: 5px; filter: drop-shadow(0 0 2px rgba(255,215,0,0.5)); }
 
-    .loader {
-        border: 4px solid #1a1a1a;
-        border-top: 4px solid #ff7b00;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 20px auto;
-    }
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;}
+#pwdModal,#eventModal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:20px;border:2px solid #00ccff;width:90%;max-width:380px;z-index:1001;border-radius:10px;max-height:90vh;overflow-y:auto;box-sizing:border-box;}
+.modal-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:15px;}
+.modal-grid label{font-size:12px;color:#00ccff;margin-bottom:-5px;font-family:'Orbitron';}
+.modal-grid input,.modal-grid select{background:#222;border:1px solid #444;color:#fff;padding:10px;border-radius:4px;font-family:'Exo 2';width:100%;box-sizing:border-box;font-size:14px;}
+#adminDriverSection{display:none;border-bottom:1px solid #00ccff;padding-bottom:10px;margin-bottom:10px;}
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+.patchlog-start{width: 100%; max-width:320px; background:#151515; border:2px solid #333; padding:15px; border-radius:10px; margin-bottom: 20px; box-sizing:border-box;}
+details summary { cursor: pointer; font-family: 'Orbitron'; color: #00ccff; font-size: 16px; outline: none; list-style: none; }
+.patch-content { margin-top: 15px; }
+.patch-item{font-size:13px; margin-bottom:15px; color:#ccc; border-bottom: 1px solid #222; padding-bottom: 10px;}
+.patch-version{color:#00ccff; font-weight:bold; font-family:'Orbitron'; font-size:12px; margin-bottom:5px; display: block;}
 
-    .beta-badge {
-        font-size: 12px;
-        background: #ff7b00;
-        color: #000;
-        padding: 3px 10px;
-        border-radius: 4px;
-        font-weight: 900;
-        text-transform: uppercase;
-    }
+@media (min-width: 900px) {
+    #start-container { flex-direction: row; align-items: flex-start; gap: 40px; }
+    .header-logo { max-width: 400px; }
+    .team-card img { width: 120px; height: 120px; }
+}
+@media (max-width: 600px) { #teamSelection{grid-template-columns: 1fr;} }
 </style>
 </head>
 <body>
 
-<div class="maintenance-container">
-    <header>🏁 Simracing Kalender</header>
-    
-    <div class="loader"></div>
-    
-    <span class="icon">🛠️</span>
-    <h1>Boxenstopp für Optimierungen</h1>
-    
-    <p>
-        Wir arbeiten gerade unter Hochdruck am Dashboard. Da wir uns aktuell in der 
-        <span class="beta-badge">Beta-Phase</span> befinden, führen wir regelmäßige 
-        Wartungen durch.
-    </p>
+<header>
+    <img src="https://hbuppukuizrnzrhwvfou.supabase.co/storage/v1/object/public/team-logos/gridhub_logo.jpeg" alt="GridHub Logo" class="header-logo">
+    <span class="beta-badge">BETA v2.0.5</span>
+</header>
+<div id="hamburger" onclick="toggleMenu()">☰</div>
 
-    <div class="info-box">
-        Voraussichtliche Rückkehr zum Rennen in:
-        <div id="countdown">
-            <div class="countdown-item">
-                <span id="days" class="countdown-value">00</span>
-                <span class="countdown-label">Tage</span>
-            </div>
-            <div class="countdown-item">
-                <span id="hours" class="countdown-value">00</span>
-                <span class="countdown-label">Std</span>
-            </div>
-            <div class="countdown-item">
-                <span id="minutes" class="countdown-value">00</span>
-                <span class="countdown-label">Min</span>
-            </div>
-            <div class="countdown-item">
-                <span id="seconds" class="countdown-value">00</span>
-                <span class="countdown-label">Sek</span>
-            </div>
-        </div>
-    </div>
-
-    <p style="font-size: 14px; color: #888;">
-        Offizielle Veröffentlichung am 04.05.2026 um 16:00 Uhr
-    </p>
+<div id="sideMenu">
+ <img src="https://hbuppukuizrnzrhwvfou.supabase.co/storage/v1/object/public/team-logos/gridhub_logo.jpeg" alt="GridHub Logo" class="menu-logo">
+ <h3>Fahrer</h3>
+ <div id="adminDriverSection">
+    <label style="font-size: 10px; color: #00ccff; font-family: 'Orbitron';">ADMIN BEREICH</label>
+    <p style="font-size: 9px; color: #888; margin: 5px 0;">Nutze "| Admin" für Teamchef-Symbol</p>
+    <input id="newDriverName" placeholder="Name | Admin" style="width:100%; box-sizing:border-box; margin-bottom:5px; padding:8px; background: #222; color: #fff; border: 1px solid #444;">
+    <button onclick="addDriver()" style="width:100%">+ Fahrer hinzufügen</button>
+ </div>
+ <button onclick="resetDriverFilter()" style="width:100%">Alle Fahrer anzeigen</button>
+ <div id="driverList"></div>
 </div>
 
+<div id="start-container">
+    <div id="patchlog-container" class="patchlog-start">
+        <details>
+            <summary>📦 Patchlog Details</summary>
+            <div class="patch-content">
+                <div class="patch-item">
+                    <span class="patch-version">VERSION 2.0.5</span>
+                    • <b>Auth:</b> Team-Passwort für Termine, Admin-Passwort für Fahrer.<br>
+                    • <b>Features:</b> Teamchef-Symbol (👑) über Suffix "| Admin" hinzugefügt.<br>
+                    • <b>UX:</b> Fahrerliste wird nun automatisch alphabetisch sortiert.
+                </div>
+                <div class="patch-item">
+                    <span class="patch-version">VERSION 2.0.4</span>
+                    • <b>Visuals:</b> Logo-Transparenz via CSS optimiert.<br>
+                    • <b>Automatisierung:</b> Termine werden 24h nach Ende gelöscht.
+                </div>
+            </div>
+        </details>
+    </div>
+    <div id="teamSelection"></div>
+</div>
+
+<div class="main-wrapper">
+ <button onclick="back()" style="margin-bottom:10px;">⬅ zurück</button>
+ <button id="addEventBtn" onclick="openEventModal()" style="display:none; margin-bottom:10px;">+ Termin erstellen</button>
+ <h2 id="teamTitle" style="font-family:'Orbitron'; font-size:20px; color:#00ccff;"></h2>
+ <select id="monthFilter" style="padding:12px; background:#151515; color:#fff; border:1px solid #00ccff; font-family:'Orbitron'; width:100%; margin-bottom:15px;">
+  <option value="all">Alle Monate</option>
+  <option value="0">Januar</option><option value="1">Februar</option><option value="2">März</option><option value="3">April</option><option value="4">Mai</option><option value="5">Juni</option><option value="6">Juli</option><option value="7">August</option><option value="8">September</option><option value="9">Oktober</option><option value="10">November</option><option value="11">Dezember</option>
+ </select>
+ <div id="calendar"></div>
+</div>
+
+<div id="overlay" onclick="closeAll()"></div>
+
+<div id="pwdModal">
+ <h3 id="pwdTitle" style="font-family:'Orbitron'; color:#00ccff;"></h3>
+ <input type="password" id="pwd" placeholder="Passwort..." style="width:100%; padding:12px; box-sizing:border-box; margin-bottom: 10px; background: #222; color: #fff; border: 1px solid #00ccff;">
+ <button onclick="login()" style="width:100%;">Login</button>
+</div>
+
+<div id="eventModal">
+ <h3 id="modalHeadline" style="font-family:'Orbitron'; color:#00ccff; margin:0; font-size:18px;">Event</h3>
+ <div class="modal-grid">
+  <label>Titel</label><input id="e_title">
+  <label>Datum</label><input id="e_date" type="date">
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+    <div><label>Start</label><input id="e_start" type="time"></div>
+    <div><label>Ende</label><input id="e_end" type="time"></div>
+  </div>
+  <label>Strecke</label><input id="e_track">
+  <label>Auto</label><input id="e_vehicle">
+  <label>Fahrer</label><select id="e_drivers" multiple></select>
+  <label>Stream</label><input id="e_stream">
+  <label>Status</label>
+  <select id="e_status">
+   <option value="ok">Findet statt</option>
+   <option value="unclear">Unklar</option>
+   <option value="cancelled">Entfällt</option>
+  </select>
+ </div>
+ <button onclick="saveEvent()" style="width:100%; margin-top:15px;">Speichern</button>
+ <button id="deleteBtn" onclick="deleteEvent()" style="width:100%; background:#b30000; color:#fff; display:none; margin-top:5px;">Löschen</button>
+ <button onclick="closeAll()" style="width:100%; background:#444; color:#fff; margin-top:5px;">Abbrechen</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- HIER DAS DATUM ANPASSEN ---
-    // Format: "Month Day, Year HH:MM:SS"
-    const targetDate = new Date("May 4, 2026 16:00:00").getTime();
+const db = supabase.createClient("https://hbuppukuizrnzrhwvfou.supabase.co","sb_publishable_atazSTKWDQ5VMKQqHxO0BA_GoPQzPDX");
 
-    function updateCountdown() {
-        const now = new Date().getTime();
-        const distance = targetDate - now;
+let teams=[],events=[],drivers=[],currentTeam=null,selectedDriver=null,selectedMonth="all",editId=null,isAdmin=false,isRealAdmin=false;
 
-        if (distance < 0) {
-            document.getElementById("countdown").innerHTML = "<span style='color:#ff7b00'>GLEICH GEHT ES LOS!</span>";
-            return;
+async function init(){
+    await loadTeams();
+    document.getElementById("monthFilter").onchange=(e)=>{selectedMonth=e.target.value; renderEvents();};
+    setInterval(() => { if(events.length > 0) renderEvents(); }, 1000); 
+    setInterval(cleanupExpiredEvents, 60000);
+}
+
+async function loadTeams(){ 
+    const {data}=await db.from('teams').select('name, logo'); 
+    teams=data||[]; 
+    renderTeams(); 
+}
+
+function renderTeams(){
+    const c=document.getElementById("teamSelection"); c.innerHTML="";
+    const teamMJ = teams.find(t => t.name === "M&J Downforce");
+    const teamMBY = teams.find(t => t.name === "MBY Performance (Test)");
+    const others = teams.filter(t => t.name !== "M&J Downforce" && t.name !== "MBY Performance (Test)").sort((a, b) => a.name.localeCompare(b.name));
+    
+    const finalOrder = [];
+    if (teamMJ) finalOrder.push(teamMJ);
+    if (others[0]) finalOrder.push(others[0]);
+    if (others[1]) finalOrder.push(others[1]);
+    if (teamMBY) finalOrder.push(teamMBY);
+    if (others.length > 2) finalOrder.push(...others.slice(2));
+
+    finalOrder.forEach(t=>{
+        let logoURL=null;
+        if(t.logo){ const {data}=db.storage.from('team-logos').getPublicUrl(t.logo); logoURL=data.publicUrl; }
+        const div=document.createElement("div"); div.className="team-card";
+        div.innerHTML=`${logoURL ? `<img src="${logoURL}">` : ""}<div class="team-name">${t.name}</div>`;
+        div.onclick=()=>openLogin(t); c.appendChild(div);
+    });
+}
+
+async function login(){
+    const inputPwd = document.getElementById("pwd").value;
+    const { data } = await db.rpc('check_team_access', { input_team_name: currentTeam.name, input_password: inputPwd });
+
+    if (data && data.length > 0 && data[0].access_granted) {
+        isAdmin = true; 
+        isRealAdmin = data[0].is_admin; 
+        await loadData();
+        completeLogin();
+    } else { alert("Passwort falsch!"); }
+}
+
+async function loadData() {
+    const [ev, dr] = await Promise.all([
+        db.from('events').select('*').eq('team', currentTeam.name),
+        db.from('drivers').select('*').eq('team', currentTeam.name).order('name', { ascending: true })
+    ]);
+    events = ev.data || [];
+    drivers = dr.data || [];
+}
+
+function openLogin(t){ currentTeam=t; document.getElementById("pwdTitle").innerText=t.name; document.getElementById("pwd").value = ""; document.getElementById("pwdModal").style.display="block"; document.getElementById("overlay").style.display="block"; }
+
+function completeLogin() {
+    closeAll();
+    document.getElementById("start-container").style.display="none";
+    document.querySelector(".main-wrapper").style.display="block";
+    document.getElementById("hamburger").style.display="block";
+    document.getElementById("teamTitle").innerText=currentTeam.name;
+    document.getElementById("adminDriverSection").style.display = isRealAdmin ? "block" : "none";
+    document.getElementById("addEventBtn").style.display = isAdmin ? "inline-block" : "none";
+    renderEvents(); renderDrivers(); updateDriverDropdown();
+}
+
+function back(){ location.reload(); }
+
+function getCountdown(targetDate) {
+    const now = new Date().getTime(); const diff = targetDate - now;
+    if (diff <= 0) return null;
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    return (d > 0 ? d + "d " : "") + h + "h " + m + "m " + s + "s";
+}
+
+function formatDriverName(name) {
+    if (!name) return "";
+    const adminTags = ["| Admin", "| Owner", "| Teamchef"];
+    let isOwner = adminTags.some(tag => name.includes(tag));
+    let cleanName = name;
+    adminTags.forEach(tag => cleanName = cleanName.replace(tag, ""));
+    return cleanName.trim() + (isOwner ? '<span class="badge-owner">👑</span>' : '');
+}
+
+function renderEvents(){
+    const c=document.getElementById("calendar"); if(!c) return; c.innerHTML="";
+    events.filter(e=>{
+        if(selectedDriver && !(e.drivers||"").includes(selectedDriver)) return false;
+        if(selectedMonth!=="all"){ const d=new Date(e.date); if(d.getMonth()!=selectedMonth) return false; }
+        return true;
+    }).sort((a,b) => new Date(a.date+" "+a.start) - new Date(b.date+" "+b.end)).forEach(e=>{
+        const now=new Date(); const start=new Date(e.date+" "+e.start); const end=new Date(e.date+" "+e.end);
+        const isLive = now >= start && now <= end; const isPast = now > end;
+        let label = e.status === "cancelled" ? "ENTFÄLLT" : (isLive ? "LIVE" : (isPast ? "Beendet" : (e.status === "ok" ? "Findet statt" : "Unklar")));
+        let badgeClass = e.status === "cancelled" ? "status-cancelled" : (isLive ? "status-live" : (isPast ? "status-past" : (e.status === "ok" ? "status-ok" : "status-unclear")));
+        const div = document.createElement("div"); div.className = `event ${isLive ? 'live' : ''} ${isPast ? 'past' : ''} ${e.status==='cancelled' ? 'cancelled' : ''}`;
+        div.onclick = () => isAdmin ? openEventModal(e) : null;
+        
+        const driverDisplay = (e.drivers || "").split(", ").map(formatDriverName).join(", ");
+
+        div.innerHTML = `
+            <div class="event-title">${e.title}</div><div class="countdown-text">${(isPast || e.status==="cancelled") ? "" : (isLive ? "Endet in: "+getCountdown(end) : "Startet in: "+getCountdown(start))}</div>
+            <div class="event-row"><span class="status-badge ${badgeClass}">${label}</span></div>
+            <div class="event-row">📅 ${e.date} | 🕒 ${e.start} - ${e.end}</div>
+            <div class="event-row">📍 ${e.track} | 🏎️ ${e.vehicle}</div>
+            <div class="event-row">👥 ${driverDisplay}</div>
+            ${e.stream ? `<a href="${e.stream}" target="_blank" class="stream-link" onclick="event.stopPropagation()">📺 Zum Stream</a>` : ""}
+        `;
+        c.appendChild(div);
+    });
+}
+
+function renderDrivers(){
+    const c=document.getElementById("driverList"); if(!c) return; c.innerHTML="";
+    drivers.forEach(d=>{
+        const container = document.createElement("div"); container.className = "driver-container";
+        const div = document.createElement("div"); div.className = `driver ${selectedDriver === d.name ? 'active' : ''}`;
+        div.innerHTML = formatDriverName(d.name); div.onclick = () => selectDriver(d.name);
+        container.appendChild(div);
+        if(isRealAdmin) {
+            const delBtn = document.createElement("div"); delBtn.className = "delete-driver-btn";
+            delBtn.innerText = "X"; delBtn.onclick = (e) => { e.stopPropagation(); deleteDriver(d.id, d.name); };
+            container.appendChild(delBtn);
         }
+        c.appendChild(container);
+    });
+}
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+async function addDriver(){
+    if(!isRealAdmin) return;
+    const name=document.getElementById("newDriverName").value.trim();
+    if(!name) return;
+    await db.from('drivers').insert({ name:name, team:currentTeam.name });
+    document.getElementById("newDriverName").value=""; await loadData(); renderDrivers(); updateDriverDropdown();
+}
 
-        document.getElementById("days").innerText = days.toString().padStart(2, '0');
-        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
-        document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
-        document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+async function deleteDriver(id, name) {
+    if(!isRealAdmin || !confirm(`Fahrer "${name}" löschen?`)) return;
+    await db.from('drivers').delete().eq('id', id); await loadData(); renderDrivers(); updateDriverDropdown();
+}
+
+function updateDriverDropdown() {
+    const select = document.getElementById("e_drivers"); if(!select) return; select.innerHTML = "";
+    drivers.forEach(d => {
+        const opt = document.createElement("option"); opt.value = d.name; opt.innerText = d.name.replace("| Admin", "").replace("| Owner", "").replace("| Teamchef", "").trim(); 
+        select.appendChild(opt);
+    });
+}
+
+function selectDriver(name){ selectedDriver = (selectedDriver === name) ? null : name; renderDrivers(); renderEvents(); }
+function resetDriverFilter(){ selectedDriver=null; renderDrivers(); renderEvents(); }
+function toggleMenu(){ document.getElementById("sideMenu").classList.toggle("open"); }
+function closeAll(){ document.getElementById("overlay").style.display="none"; document.getElementById("pwdModal").style.display="none"; document.getElementById("eventModal").style.display="none"; document.getElementById("sideMenu").classList.remove("open"); }
+
+function openEventModal(eventObj = null) {
+    if(!isAdmin && eventObj) return;
+    updateDriverDropdown();
+    const driverSelect = document.getElementById("e_drivers");
+    if(eventObj && eventObj.id) {
+        editId = eventObj.id; document.getElementById("modalHeadline").innerText = "Bearbeiten";
+        document.getElementById("e_title").value = eventObj.title; document.getElementById("e_date").value = eventObj.date;
+        document.getElementById("e_start").value = eventObj.start; document.getElementById("e_end").value = eventObj.end;
+        document.getElementById("e_track").value = eventObj.track; document.getElementById("e_vehicle").value = eventObj.vehicle;
+        document.getElementById("e_stream").value = eventObj.stream; document.getElementById("e_status").value = eventObj.status;
+        const eventDrivers = (eventObj.drivers || "").split(", ");
+        Array.from(driverSelect.options).forEach(opt => { opt.selected = eventDrivers.includes(opt.value); });
+        document.getElementById("deleteBtn").style.display = "block";
+    } else {
+        editId = null; document.getElementById("modalHeadline").innerText = "Neues Event";
+        document.querySelectorAll("#eventModal input").forEach(i => i.value = "");
+        document.getElementById("e_status").value = "ok";
+        Array.from(driverSelect.options).forEach(opt => opt.selected = false);
+        document.getElementById("deleteBtn").style.display = "none";
     }
+    document.getElementById("eventModal").style.display="block"; document.getElementById("overlay").style.display="block";
+}
 
-    // Update jede Sekunde
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+async function saveEvent(){
+    if(!isAdmin) return;
+    const selectedDrivers = Array.from(document.getElementById("e_drivers").selectedOptions).map(opt => opt.value).join(", ");
+    const eventData = {
+        title: document.getElementById("e_title").value, date: document.getElementById("e_date").value,
+        start: document.getElementById("e_start").value, end: document.getElementById("e_end").value,
+        track: document.getElementById("e_track").value, vehicle: document.getElementById("e_vehicle").value,
+        drivers: selectedDrivers, stream: document.getElementById("e_stream").value,
+        status: document.getElementById("e_status").value, team: currentTeam.name
+    };
+    if(editId) await db.from('events').update(eventData).eq('id', editId);
+    else await db.from('events').insert(eventData);
+    closeAll(); await loadData(); renderEvents();
+}
+
+async function deleteEvent() {
+    if(!isAdmin || !editId || !confirm("Löschen?")) return;
+    await db.from('events').delete().eq('id', editId);
+    closeAll(); await loadData(); renderEvents();
+}
+
+async function cleanupExpiredEvents() {
+    if(!isAdmin || events.length === 0) return;
+    const now = new Date().getTime();
+    for (const e of events) {
+        const end = new Date(e.date + " " + (e.end || "23:59")).getTime();
+        if (now - end > 86400000) await db.from('events').delete().eq('id', e.id);
+    }
+}
+
+window.onload=init;
 </script>
-
 </body>
 </html>

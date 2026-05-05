@@ -59,8 +59,6 @@ header{padding:20px;text-align:center;font-family:'Orbitron';word-wrap:break-wor
 .header-logo { max-width: 300px; height: auto; display: block; margin: 0 auto; mix-blend-mode: screen; }
 .beta-badge{font-size:10px;background:#00ccff;color:#000;padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:5px;font-weight:900;display:inline-block;}
 
-.maintenance-box { display: none; }
-
 #start-container{display:flex; flex-direction:column; max-width:1200px; margin:auto; padding:15px; box-sizing:border-box;}
 #teamSelection{display:grid;grid-template-columns:repeat(3, 1fr);gap:15px; flex-grow:1;}
 
@@ -148,14 +146,15 @@ details summary { cursor: pointer; font-family: 'Orbitron'; color: #00ccff; font
             <div class="patch-content">
                 <div class="patch-item">
                     <span class="patch-version">VERSION 2.0.5</span>
-                    • <b>Auth:</b> Team-Passwort für Termine, Admin-Passwort für Fahrer.<br>
-                    • <b>Features:</b> Teamchef-Symbol (👑) über Suffix "| Admin" hinzugefügt.<br>
-                    • <b>UX:</b> Fahrerliste wird nun automatisch alphabetisch sortiert.
+                    • <b>Teams:</b> Neon Simsports hinzugefügt.<br>
+                    • <b>Auth:</b> System auf 2-Passwort-Struktur (User/Admin) umgestellt.<br>
+                    • <b>Features:</b> Teamchef-Symbol (👑) über Suffix "| Admin" verfügbar.<br>
+                    • <b>UX:</b> Automatische alphabetische Sortierung der Fahrerliste.
                 </div>
                 <div class="patch-item">
                     <span class="patch-version">VERSION 2.0.4</span>
-                    • <b>Visuals:</b> Logo-Transparenz via CSS optimiert.<br>
-                    • <b>Automatisierung:</b> Termine werden 24h nach Ende gelöscht.
+                    • <b>Visuals:</b> Logo-Darstellung und Transparenz optimiert.<br>
+                    • <b>Automatisierung:</b> Alte Termine werden 24h nach Ende gelöscht.
                 </div>
             </div>
         </details>
@@ -230,13 +229,19 @@ function renderTeams(){
     const c=document.getElementById("teamSelection"); c.innerHTML="";
     const teamMJ = teams.find(t => t.name === "M&J Downforce");
     const teamMBY = teams.find(t => t.name === "MBY Performance (Test)");
-    // Andere Teams (inkl. Green Inferno Racing) alphabetisch sortieren
-    const others = teams.filter(t => t.name !== "M&J Downforce" && t.name !== "MBY Performance (Test)").sort((a, b) => a.name.localeCompare(b.name));
+    const teamNeon = teams.find(t => t.name === "Neon Simsports");
+
+    const others = teams.filter(t => 
+        t.name !== "M&J Downforce" && 
+        t.name !== "MBY Performance (Test)" && 
+        t.name !== "Neon Simsports"
+    ).sort((a, b) => a.name.localeCompare(b.name));
     
     const finalOrder = [];
     if (teamMJ) finalOrder.push(teamMJ);
     if (others[0]) finalOrder.push(others[0]);
     if (others[1]) finalOrder.push(others[1]);
+    if (teamNeon) finalOrder.push(teamNeon);
     if (teamMBY) finalOrder.push(teamMBY);
     if (others.length > 2) finalOrder.push(...others.slice(2));
 
@@ -251,14 +256,21 @@ function renderTeams(){
 
 async function login(){
     const inputPwd = document.getElementById("pwd").value;
-    const { data } = await db.rpc('check_team_access', { input_team_name: currentTeam.name, input_password: inputPwd });
+    const { data: teamData } = await db.from('teams').select('password, admin_password').eq('name', currentTeam.name).single();
 
-    if (data && data.length > 0 && data[0].access_granted) {
-        isAdmin = true; 
-        isRealAdmin = data[0].is_admin; 
+    if (teamData) {
+        if (inputPwd === teamData.admin_password) {
+            isAdmin = true; isRealAdmin = true;
+        } else if (inputPwd === teamData.password) {
+            isAdmin = true; isRealAdmin = false;
+        } else {
+            alert("Passwort falsch!"); return;
+        }
         await loadData();
         completeLogin();
-    } else { alert("Passwort falsch!"); }
+    } else {
+        alert("Datenbankfehler oder Team nicht gefunden.");
+    }
 }
 
 async function loadData() {
@@ -319,7 +331,6 @@ function renderEvents(){
         div.onclick = () => isAdmin ? openEventModal(e) : null;
         
         const driverDisplay = (e.drivers || "").split(", ").map(formatDriverName).join(", ");
-
         div.innerHTML = `
             <div class="event-title">${e.title}</div><div class="countdown-text">${(isPast || e.status==="cancelled") ? "" : (isLive ? "Endet in: "+getCountdown(end) : "Startet in: "+getCountdown(start))}</div>
             <div class="event-row"><span class="status-badge ${badgeClass}">${label}</span></div>
@@ -375,7 +386,7 @@ function toggleMenu(){ document.getElementById("sideMenu").classList.toggle("ope
 function closeAll(){ document.getElementById("overlay").style.display="none"; document.getElementById("pwdModal").style.display="none"; document.getElementById("eventModal").style.display="none"; document.getElementById("sideMenu").classList.remove("open"); }
 
 function openEventModal(eventObj = null) {
-    if(!isAdmin && eventObj) return;
+    if(!isAdmin) return;
     updateDriverDropdown();
     const driverSelect = document.getElementById("e_drivers");
     if(eventObj && eventObj.id) {
